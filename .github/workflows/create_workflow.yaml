@@ -33,7 +33,7 @@ jobs:
             Check status at https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
       - name: Checkout repo from PR-branch
-        if: env.REPO == '${{ env.EPHEMERAL_RUN_REPO }}'
+        if: env.REPO == env.EPHEMERAL_RUN_REPO
         uses: actions/checkout@v2
         with:
           ref: ${{ env.PR_BRANCH }}
@@ -81,7 +81,7 @@ jobs:
       - name: Create env.yaml
         run: |
           pushd $EPHEMERAL_RUN_REPO/$EPHEMERAL_DIR_PATH
-          REPO=$(echo "$REPO" | awk '{print tolower($0)}')
+          REPO=$(echo "$REPO" | awk '{print tolower($0)}' | sed -e "s/\./-/g")
           cp env.sample.yaml env.yaml
           sed -i "s/USER_INITIALS/pr/g" env.yaml
           sed -i "s/JIRA_ID/$REPO-$PR_NUMBER/g" env.yaml
