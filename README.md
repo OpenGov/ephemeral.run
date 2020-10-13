@@ -13,7 +13,7 @@ On 14 October 2020 we introduced ephemeral.run at a [CNCF community webinar](htt
 
 ## Getting Started
 
-Coming soon!
+Read [GETTING-STARTED](https://github.com/OpenGov/ephemeral.run/blob/main/GETTING-STARTED) to... get started.
 
 ## Contributing
 
@@ -70,4 +70,4 @@ Our logo was designed by @torymartin88 (torymartin.com).
 
 ## Licensing
 
-ephemeral.run is licensed under the Apache License, Version 2.0. See LICENSE for the full license text.
+ephemeral.run is licensed under the Apache License, Version 2.0. See [LICENSE](https://github.com/OpenGov/ephemeral.run/blob/main/LICENSE) for the full license text.

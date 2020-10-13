@@ -1,0 +1,153 @@
+name: delete-workflow
+on:
+  pull_request:
+    branches:
+      - main
+    types: [labeled, closed]
+jobs:
+  delete-workflow:
+    runs-on: ubuntu-18.04
+    if: github.event.label.name == 'ephemeral-delete' || github.event.action == 'closed'
+    env:
+      EPHEMERAL_DIR_PATH: ephemeral-setup
+      HELM_VERSION: v3.3.4
+      KUBE_CONTEXT: ${{ secrets.AWS_CLUSTER_NAME }}
+      AWS_REGION: ap-south-1
+      PR_NUMBER: ${{ github.event.number }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+      DOCKERHUB_REPOSITORY: ${{ secrets.DOCKERHUB_REPOSITORY }}
+      REPO: ${{ github.event.pull_request.head.repo.name }}
+      EPHEMERAL_RUN_REPO: ephemeral.run
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.IAM_CLUSTER_USER }}
+          aws-secret-access-key: ${{ secrets.IAM_CLUSTER_PASSWORD }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Test Access to EKS cluster
+        run: |
+          aws eks --region $AWS_REGION update-kubeconfig --name $KUBE_CONTEXT --alias $KUBE_CONTEXT
+          kubectl config use-context $KUBE_CONTEXT
+          kubectl config current-context
+          kubectl get ns
+          REPO=$(echo "$REPO" | awk '{print tolower($0)}')
+          if kubectl get ns pr-$REPO-$PR_NUMBER | grep $REPO-$PR_NUMBER ; then
+              echo "NAMESPACE EXISTS"
+              NAMESPACE_EXISTS=true
+          else
+              echo "NAMESPACE DOESNOT EXIST"
+              NAMESPACE_EXISTS=false
+          fi
+          echo ::set-env name=NAMESPACE_EXISTS::$NAMESPACE_EXISTS
+
+      - name: Add deployment delete started comment on source repo PR
+        if: env.NAMESPACE_EXISTS == 'true'
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          token: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
+          repository: OpenGov/${{ env.REPO }}
+          issue-number: ${{ env.PR_NUMBER }}
+          body: |
+            Deletion for your ephemeral environment has started.
+
+            Check status at https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Checkout Repo
+        if: env.NAMESPACE_EXISTS == 'true'
+        uses: actions/checkout@v2
+        with:
+          ref: main
+          repository: OpenGov/${{ env.EPHEMERAL_RUN_REPO }}
+          token: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
+          path: ${{ env.EPHEMERAL_RUN_REPO }}
+
+      - name: Download skaffold
+        if: env.NAMESPACE_EXISTS == 'true'
+        run: |
+          curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/v1.14.0/skaffold-linux-amd64
+          chmod +x skaffold
+          sudo mv skaffold /usr/local/bin
+          skaffold version
+
+      - name: Install yq
+        if: env.NAMESPACE_EXISTS == 'true'
+        run: |
+          sudo add-apt-repository ppa:rmescandon/yq
+          sudo apt update
+          sudo apt install yq -y
+          yq --version
+
+      - name: Create env.yaml
+        if: env.NAMESPACE_EXISTS == 'true'
+        run: |
+          pushd $EPHEMERAL_RUN_REPO/$EPHEMERAL_DIR_PATH
+          REPO=$(echo "$REPO" | awk '{print tolower($0)}')
+          cp env.sample.yaml env.yaml
+          sed -i "s/USER_INITIALS/pr/g" env.yaml
+          sed -i "s/JIRA_ID/$REPO-$PR_NUMBER/g" env.yaml
+          sed -i "s/KUBECONTEXT_OF_EPHEMERAL_ENVIRONMENT/$KUBE_CONTEXT/g" env.yaml
+          popd
+
+      - name: Install correct helm version
+        if: env.NAMESPACE_EXISTS == 'true'
+        run: |
+          curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+          chmod 700 get_helm.sh
+          ./get_helm.sh -v $HELM_VERSION
+
+      - name: Run Skaffold Delete
+        if: env.NAMESPACE_EXISTS == 'true'
+        run: |
+          cd $EPHEMERAL_RUN_REPO/$EPHEMERAL_DIR_PATH
+          REPO=$(echo "$REPO" | awk '{print tolower($0)}')
+          bash -x init.sh ephemeral-delete
+
+      - name: Delete label ephemeral-delete
+        if: always() && contains(github.event.pull_request.labels.*.name, 'ephemeral-delete')
+        uses: actions/github-script@0.8.0
+        with:
+          github-token: ${{secrets.GIT_HUB_ACCESS_TOKEN}}
+          script: |
+            github.issues.removeLabel({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: ['ephemeral-delete']
+            })
+
+      - name: Delete label ephemeral-deploy
+        if: always() && contains(github.event.pull_request.labels.*.name, 'ephemeral-deploy')
+        uses: actions/github-script@0.8.0
+        with:
+          github-token: ${{secrets.GIT_HUB_ACCESS_TOKEN}}
+          script: |
+            github.issues.removeLabel({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: ['ephemeral-deploy']
+            })
+
+      - name: Add environment delete comment on source PR
+        if: env.NAMESPACE_EXISTS == 'true'
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          token: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
+          repository: OpenGov/${{ env.REPO }}
+          issue-number: ${{ env.PR_NUMBER }}
+          body: |
+            Your environment has been deleted and resources are now available for another.
+
+      - name: Delete the environment even if the skaffold delete step fails
+        if: failure()
+        run: |
+          REPO=$(echo "$REPO" | awk '{print tolower($0)}')
+          output=$(helm ls | grep "pr-$REPO-$PR_NUMBER" | sed 's/\|/ /'|awk 'BEGIN { ORS=" " }; {print $1}' || echo "")
+          for x in $output; do
+              helm delete "$x" --purge ;
+          done
+          LIST=$(kubectl get all -n "pr-$REPO-$PR_NUMBER" | grep -v -e '^$\|NAME' | awk '{print $1}' | tr '\r\n' ' ' || echo "" )
+          kubectl delete ns "pr-$REPO-$PR_NUMBER" --ignore-not-found=true

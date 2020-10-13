@@ -1,0 +1,25 @@
+---
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - /.github/workflows/*
+  pull_request:
+    branches:
+      - '*'
+    paths:
+      - /.github/workflows/*
+
+jobs:
+  linting:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@master
+      - name: YAML Lint
+        uses: ibiqlik/action-yamllint@v1
+        with:
+          file_or_dir: /.github/workflows/*

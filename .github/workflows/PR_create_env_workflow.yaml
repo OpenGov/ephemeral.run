@@ -1,0 +1,20 @@
+name: PR-workflow
+on:
+  pull_request:
+    branches:
+      - main
+    types: [labeled]
+jobs:
+  dispatch_repo:
+    runs-on: ubuntu-18.04
+    if: github.event.label.name == 'ephemeral-deploy'
+    env:
+      EPHEMERAL_RUN_REPO: ephemeral.run
+    steps:
+      - name: Repository Dispatch
+        uses: OpenGov/repository-dispatch@v1
+        with:
+          token: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
+          repository: OpenGov/${{ env.EPHEMERAL_RUN_REPO }}
+          event-type: EKS-cluster
+          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}", "name" : "${{ github.event.pull_request.head.repo.name }}", "pull_number" : "${{ github.event.number }}", "target_branch_name" : "${{ github.base_ref }}", "branch_name" : "${{ github.head_ref }}"}'

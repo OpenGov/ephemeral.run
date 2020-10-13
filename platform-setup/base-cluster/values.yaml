@@ -1,0 +1,232 @@
+# Default values for botkube.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+botkube:
+  replicaCount: 1
+
+  image:
+    repository: infracloudio/botkube
+    pullPolicy: IfNotPresent
+    ## default tag is appVersion from Chart.yaml. If you want to use
+    ## some other tag then it can be specified here
+    tag: v0.10.0
+
+  config:
+    ## Resources you want to watch
+    resources:
+      - name: namespace
+        namespaces:
+          include:
+            - all
+          ignore:
+            -
+        events:
+          - create
+          - delete
+          - error
+
+  # Setting to support multiple clusters
+    settings:
+      # Cluster name to differentiate incoming messages
+      clustername: ephemeral
+      allowkubectl: true
+      kubectl:
+        commands:
+          # method which are allowed
+          verbs: ["api-resources", "api-versions", "cluster-info", "describe", "diff", "explain", "get", "logs", "top", "auth"]
+          # resource configuration which is allowed
+          resources: ["deployments", "pods" , "namespaces", "daemonsets", "statefulsets", "storageclasses", "nodes"]
+
+# Communication settings
+  communications:
+    # Settings for Slack
+    slack:
+      enabled: true
+      channel: SLACK_CHANNEL
+      notiftype: short # Change notification type short/long you want to receive. notiftype is optional and Default notification type is short (if not specified) # e.g https://example.com:80
+      token: SLACK_TOKEN
+
+  resources:
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+# The static workloads must run on the non-spot instances
+  tolerations:
+  - key: nodeLifeCycle
+    operator: Equal
+    value: normal
+    effect: NoSchedule
+
+  nodeSelector:
+    kubernetes.io/lifecycle: normal
+    kubernetes.io/role: worker-green-on-demand
+
+  affinity: {}
+
+#------------------------------------------------------------
+external-dns:
+  policy: sync
+  #aws:
+  #  credentials:
+  #    secretKey: ""
+  #    accessKey: ""
+
+  rbac:
+    create: true
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: "arn:aws:iam::<ACCOUNT_ID>:role/external-dns"
+  # The static workloads must run on the non-spot instances
+  tolerations:
+    - key: nodeLifeCycle
+      operator: Equal
+      value: normal
+      effect: NoSchedule
+
+  nodeSelector:
+    kubernetes.io/lifecycle: normal
+    kubernetes.io/role: worker-green-on-demand
+
+#------------------------------------------------------------
+termination-handler:
+  enabled: true
+
+  rbac:
+    create: true
+
+  image:
+    repository: kubeaws/kube-spot-termination-notice-handler
+    tag: 1.13.7-1
+    pullPolicy: IfNotPresent
+
+  verbose: 1
+
+  slackUrl:  SLACK_WEBHOOK_URL
+  clusterName: ephemeral-demo-spot
+
+  nodeSelector:
+    kubernetes.io/lifecycle: spot
+    kubernetes.io/role: worker-green-spot
+
+  resources:
+    limits:
+      cpu: 100m
+      memory: 200Mi
+    requests:
+      cpu: 100m
+      memory: 200Mi
+
+#-------------------------------------------------------------
+kube-janitor:
+  enabled: true
+
+  image:
+    repository: hjacobs/kube-janitor
+    tag: 19.12.0
+    pullPolicy: IfNotPresent
+
+  kubejanitor:
+    dryRun: false
+    debug: false
+    once: true
+    excludeNamespaces: default,ephemeral-management,kube-node-lease,kube-public,kube-system,management
+    rules:
+      - id: namespaces-delete
+        resources:
+          - namespaces
+        jmespath: "metadata.labels.ephemeralkubejanitor"
+        ttl: 10m
+
+  cron:
+    schedule: "*/5 * * * *"
+    failedJobsHistoryLimit: 10
+
+  restartPolicy: OnFailure
+
+  # The static workloads must run on the non-spot instances
+  tolerations:
+    - key: nodeLifeCycle
+      operator: Equal
+      value: normal
+      effect: NoSchedule
+
+  nodeSelector:
+    kubernetes.io/lifecycle: normal
+    kubernetes.io/role: worker-green-on-demand
+
+  resources:
+    limits:
+      cpu: 100m
+      memory: 300Mi
+    requests:
+      cpu: 100m
+      memory: 300Mi
+
+##### cluster-autoscaler Chart defaults
+cluster-autoscaler:
+  image:
+    repository: us.gcr.io/k8s-artifacts-prod/autoscaling/cluster-autoscaler
+    tag: v1.15.6
+
+  rbac:
+    create: true
+    serviceAccountAnnotations:
+      eks.amazonaws.com/role-arn: "arn:aws:iam::<ACCOUNT_ID>:role/cluster-autoscaler"
+
+  #awsAccessKeyID: ""
+  #awsSecretAccessKey: ""
+  # Only applicable to runing on Amazon Linux 2
+  sslCertHostPath: '/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem'
+
+  cloudProvider: 'aws'
+
+  # You are required to set the AWS region
+  awsRegion: ''
+
+  # You must set the following to the EKS cluster name
+  autoDiscovery:
+    clusterName: 'ephemeral-demo-spot'
+  #autoscalingGroups:
+  #  - name: ephemeral-demo-spot-worker-green-spot20201009124542983500000004
+  #    maxSize: 3
+  #    minSize: 0
+  #  - name: ephemeral-demo-spot-worker-green-on-demand20201009124542983500000005
+  #    maxSize: 2
+  #    minSize: 1
+  extraArgs:
+    scale-down-utilization-threshold: 0.7
+
+    # By default, cluster autoscaler will not terminate nodes running pods in the kube-system namespace
+    # so we disable that feature so that it doesnt prevent scaling down.
+    # For EKS clusters, the only type of pods that will be in that namespace are the kube-proxy and CNI pod
+    skip-nodes-with-system-pods: false
+    skip-nodes-with-local-storage: false
+    aws-use-static-instance-list : true
+
+  resources:
+    requests:
+      cpu: 250m
+      memory: 384Mi
+    limits:
+      cpu: 250m
+      memory: 384Mi
+
+  # The static workloads must run on the non-spot instances
+  tolerations:
+    - key: nodeLifeCycle
+      operator: Equal
+      value: normal
+      effect: NoSchedule
+
+  nodeSelector:
+    kubernetes.io/lifecycle: normal
+    kubernetes.io/role: worker-green-on-demand
