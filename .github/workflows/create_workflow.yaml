@@ -1,0 +1,183 @@
+name: Repository Dispatch
+on:
+  repository_dispatch:
+    types: [EKS-cluster]
+jobs:
+  EKS-cluster:
+    runs-on: ubuntu-18.04
+    env:
+      REPO: ${{ github.event.client_payload.name }}
+      TARGET_BRANCH: ${{ github.event.client_payload.target_branch_name }}
+      PR_BRANCH: ${{ github.event.client_payload.branch_name }}
+      EPHEMERAL_DIR_PATH: ephemeral-env
+      KUBE_CONTEXT: ${{ secrets.AWS_CLUSTER_NAME }}
+      AWS_REGION: ap-south-1
+      PR_NUMBER: ${{ github.event.client_payload.pull_number }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+      DOCKERHUB_REPOSITORY: ${{ secrets.DOCKERHUB_REPOSITORY }}
+      DOCKERHUB_REGISTRY: index.docker.io
+      HELM_VERSION: v3.3.4
+      TTL: 24 hours
+      EPHEMERAL_RUN_REPO: ephemeral.run
+    steps:
+      - name: Add deployment start comment on source repo PR
+        uses: OpenGov/create-or-update-comment@v1
+        with:
+          token: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
+          repository: OpenGov/${{ env.REPO }}
+          issue-number: ${{ env.PR_NUMBER }}
+          body: |
+            Deployment for your ephemeral environment has started. Please check back in 15 minutes. Don't forget about it!
+
+            Check status at https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Checkout repo from PR-branch
+        if: env.REPO == '${{ env.EPHEMERAL_RUN_REPO }}'
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ env.PR_BRANCH }}
+          repository: OpenGov/${{ env.EPHEMERAL_RUN_REPO }}
+          token: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
+          path: ${{ env.EPHEMERAL_RUN_REPO }}
+
+      - name: Checkout opengov from target canonical branch
+        if: env.REPO != 'ephemeral.run'
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ env.TARGET_BRANCH }}
+          repository: OpenGov/${{ env.EPHEMERAL_RUN_REPO }}
+          token: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
+          path: ${{ env.EPHEMERAL_RUN_REPO }}
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.IAM_CLUSTER_USER }}
+          aws-secret-access-key: ${{ secrets.IAM_CLUSTER_PASSWORD }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Configure Access to EKS cluster
+        run: |
+          aws eks --region $AWS_REGION update-kubeconfig --name $KUBE_CONTEXT --alias $KUBE_CONTEXT
+          kubectl config use-context $KUBE_CONTEXT
+          kubectl config current-context
+          kubectl get ns
+
+      - name: Download skaffold
+        run: |
+          curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/v1.14.0/skaffold-linux-amd64
+          chmod +x skaffold
+          sudo mv skaffold /usr/local/bin
+          skaffold version
+
+      - name: Install yq
+        run: |
+          sudo add-apt-repository ppa:rmescandon/yq
+          sudo apt update
+          sudo apt install yq -y
+          yq --version
+
+      - name: Create env.yaml
+        run: |
+          pushd $EPHEMERAL_RUN_REPO/$EPHEMERAL_DIR_PATH
+          REPO=$(echo "$REPO" | awk '{print tolower($0)}')
+          cp env.sample.yaml env.yaml
+          sed -i "s/USER_INITIALS/pr/g" env.yaml
+          sed -i "s/JIRA_ID/$REPO-$PR_NUMBER/g" env.yaml
+          sed -i "s/KUBECONTEXT_OF_EPHEMERAL_ENVIRONMENT/$KUBE_CONTEXT/g" env.yaml
+          popd
+
+      - name: Update image tags for services
+        if: contains (env.REPO, 'ephemeral.run')
+        run: |
+          echo "Using default tags for images.";
+
+      - name: Update image tags for front-end services
+        if: contains (env.REPO, 'front-end')
+        run: |
+          pushd EPHEMERAL_RUN_REPO/$EPHEMERAL_DIR_PATH
+          docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
+          for IMAGE_NAME in $( grep 'tag' default-tags.json | awk -F '[:"/]' '{print $6}' | grep 'front-end' )
+          do
+              if DOCKER_CLI_EXPERIMENTAL=enabled docker manifest inspect $DOCKERHUB_REPOSITORY/$IMAGE_NAME:PR-$PR_NUMBER > /dev/null ; then
+                  echo "$DOCKERHUB_REPOSITORY/$IMAGE_NAME:PR-$PR_NUMBER is present in Docker repo and will be used";
+                  sed -i "s/$IMAGE_NAME:main/$IMAGE_NAME:PR-$PR_NUMBER/g" default-tags.json
+              else
+                  echo "$DOCKERHUB_REPOSITORY/$IMAGE_NAME:PR-$PR_NUMBER is NOT present in Docker repo, using default";
+              fi
+          done
+          popd
+
+      - name: Install correct helm version
+        run: |
+          helm version
+          curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+          chmod 700 get_helm.sh
+          ./get_helm.sh -v $HELM_VERSION
+
+      - name: Run helm dep update
+        run: |
+          pushd EPHEMERAL_RUN_REPO/$EPHEMERAL_DIR_PATH
+          ./helm_dep_update.sh
+          popd
+
+      - name: Run Skaffold Deploy
+        run: |
+          pushd EPHEMERAL_RUN_REPO/$EPHEMERAL_DIR_PATH
+          bash -x init.sh ephemeral-deploy
+          DOMAIN_TO_USE=$(cat /tmp/domain_name)
+          NAMESPACE=$(cat /tmp/namespace)
+          echo ::set-env name=DOMAIN_TO_USE::$DOMAIN_TO_USE
+          echo ::set-env name=ENV_TAGS::"$(grep 'tag' default-tags.json | awk -F '["]' '{print $4}' | tr '\n' ' ' )"
+          echo ::set-env name=NAMESPACE::$NAMESPACE
+          popd
+
+      - name: Update domain name & image tags used in env as comment on PR
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          token: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
+          repository: OpenGov/${{ env.REPO }}
+          issue-number: ${{ env.PR_NUMBER }}
+          body: |
+            Your environment is ready at http://${{ env.DOMAIN_TO_USE }}
+
+            It will take a few minutes for all the services to become healthy and available. You will have to check the service health yourself if it isn't coming up after a while (>15m) to see which service won't start and why.
+
+            It will auto-terminate after ${{ env.TTL }}!
+
+            ---
+            Debugging
+            - You can run read-only `kubectl` commands with `@KubeBot` in Slack
+            - This command can be used to check the status of the environment pods:
+            `kubectl get pods -n ${{ env.NAMESPACE }}`
+            - This command will set the proper kubecontext:
+            `aws eks --region ${{ env.AWS_REGION }} update-kubeconfig --name ${{ env.KUBE_CONTEXT }}`
+            - Check the image tags used to create your environment against your expectations (did Jenkins finish building and pushing the right images?):
+            ${{ env.ENV_TAGS }}
+
+      - name: Update job failure comment on source repo PR
+        if: failure()
+        uses: OpenGov/create-or-update-comment@v1
+        with:
+          token: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
+          repository: OpenGov/${{ env.REPO }}
+          issue-number: ${{ env.PR_NUMBER }}
+          body: |
+            The deployment failed, please check the logs at https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            Sometimes you can simply delete and recreate it.
+
+            PLEASE DELETE THE ENVIRONMENT AS SOON AS POSSIBLE!
+            (Once you are done debugging, freeing it up for others to use.)
+
+            ---
+
+            Debugging
+            - You can run read-only `kubectl` commands with `@KubeBot` in Slack
+            - This command can be used to check the status of the environment pods:
+            `kubectl get pods -n ${{ env.NAMESPACE }}`
+            - This command will set the proper kubecontext:
+            `aws eks --region ${{ env.AWS_REGION }} update-kubeconfig --name ${{ env.KUBE_CONTEXT }}`
+            - Check the image tags used to create your environment against your expectations (did Jenkins finish building and pushing the right images?):
+            ${{ env.ENV_TAGS }}

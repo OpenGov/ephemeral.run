@@ -1,0 +1,7 @@
+.terraform
+env.yaml
+skaffold.yaml
+terraform.tfstate
+platform-setup/base-cluster/charts
+terraform.tfstate.backup
+backup

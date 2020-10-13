@@ -1,0 +1,5 @@
+environment1.demo.ephemeral.run
+environment2.demo.ephemeral.run
+environment3.demo.ephemeral.run
+environment4.demo.ephemeral.run
+environment5.demo.ephemeral.run

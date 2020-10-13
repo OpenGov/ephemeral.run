@@ -1,0 +1,116 @@
+apiVersion: skaffold/v2beta6
+kind: Config
+profiles:
+  - name: minikube
+    build:
+      tagPolicy:
+        sha256: {}
+      local:
+        push: false
+        useDockerCLI: false
+        useBuildkit: false
+      artifacts:
+        - image: ${skaffoldContainerImageCredentials_registry}/front-end
+          context: ../../front-end/
+          docker:
+            dockerfile: Dockerfile
+    deploy:
+      kubeContext: ${minikube_kubeContext}
+      helm:
+        flags:
+          upgrade: [--timeout=1800s]
+          install: [--timeout=1800s]
+        releases:
+          - name: microservice-demo-${minikube_dev_initials}-${minikube_work_item_id}
+            chartPath: ../helm-microservice-demo/
+            namespace: ${minikube_dev_initials}-${minikube_work_item_id}
+            valuesFiles:
+              - env.yaml
+            artifactOverrides:
+              frontend.image: ${skaffoldContainerImageCredentials_registry}/front-end
+            imageStrategy:
+              helm: {}
+            setValueTemplates:
+              namespace.eph_env_ns_name: ${minikube_dev_initials}-${minikube_work_item_id}
+
+  - name: ephemeral-development
+    activation:
+      - kubeContext: ${ephemeral_kubeContext}
+    build:
+      local:
+        push: true
+        useDockerCLI: true
+      tagPolicy:
+        gitCommit: {}
+      artifacts:
+        - image: opengovinfracloud/front-end
+          context: ../../front-end/
+          docker:
+            dockerfile: Dockerfile
+            noCache: true
+    deploy:
+      statusCheckDeadlineSeconds: 600
+      kubeContext: ${ephemeral_kubeContext}
+      helm:
+        flags:
+          upgrade: [--timeout=1800s]
+          install: [--timeout=1800s]
+        releases:
+          - name: microservice-demo-${ephemeral_dev_initials}-${ephemeral_work_item_id}
+            chartPath: ../helm-microservice-demo/
+            namespace: ${ephemeral_dev_initials}-${ephemeral_work_item_id}
+            valuesFiles:
+              - env.yaml
+            artifactOverrides:
+              frontend.image: ${skaffoldContainerImageCredentials_registry}/front-end
+            imageStrategy:
+              helm: {}
+            setValueTemplates:
+              namespace.eph_env_ns_name: ${ephemeral_dev_initials}-${ephemeral_work_item_id}
+          - name: nginx-ingress-controller-${ephemeral_dev_initials}-${ephemeral_work_item_id}
+            chartPath: nginx-stable/nginx-ingress
+            namespace: ${ephemeral_dev_initials}-${ephemeral_work_item_id}
+            remote: true
+            valuesFiles:
+              - ../nginx-ingress-controller/custom-values.yaml
+            setValues:
+              controller.service.annotations.external-dns\.alpha\.kubernetes\.io/hostname: DOMAIN_TO_USE
+              controller.scope.namespace: ${ephemeral_dev_initials}-${ephemeral_work_item_id}
+              #Following annotation is to be used if TLS is to be enabled on the ingress
+              #Requires certificate to be provisioned through ACM
+              #nginx-ingress.controller.service.annotations."service\.beta\.kubernetes\.io/aws-load-balancer-ssl-cert": ACM_CERT_ARN
+  # This profile uses the same configuration as ephemeral-development.
+  - name: ephemeral-deployment
+    activation:
+      - kubeContext: ${ephemeral_kubeContext}
+    deploy:
+      statusCheckDeadlineSeconds: 600
+      kubeContext: ${ephemeral_kubeContext}
+      helm:
+        flags:
+          upgrade: [--timeout=1800s]
+          install: [--timeout=1800s]
+        releases:
+          - name: microservice-demo-${ephemeral_dev_initials}-${ephemeral_work_item_id}
+            chartPath: ../helm-microservice-demo/
+            namespace: ${ephemeral_dev_initials}-${ephemeral_work_item_id}
+            valuesFiles:
+              - env.yaml
+            artifactOverrides:
+              frontend.image: ${skaffoldContainerImageCredentials_registry}/front-end
+            imageStrategy:
+              helm: {}
+            setValueTemplates:
+              namespace.eph_env_ns_name: ${ephemeral_dev_initials}-${ephemeral_work_item_id}
+          - name: nginx-ingress-controller-${ephemeral_dev_initials}-${ephemeral_work_item_id}
+            chartPath: nginx-stable/nginx-ingress
+            namespace: ${ephemeral_dev_initials}-${ephemeral_work_item_id}
+            remote: true
+            valuesFiles:
+              - ../nginx-ingress-controller/custom-values.yaml
+            setValues:
+              controller.service.annotations.external-dns\.alpha\.kubernetes\.io/hostname: DOMAIN_TO_USE
+              controller.scope.namespace: ${ephemeral_dev_initials}-${ephemeral_work_item_id}
+              #Following annotation is to be used if TLS is to be enabled on the ingress
+              #Requires certificate to be provisioned through ACM
+              #nginx-ingress.controller.service.annotations."service\.beta\.kubernetes\.io/aws-load-balancer-ssl-cert": ACM_CERT_ARN

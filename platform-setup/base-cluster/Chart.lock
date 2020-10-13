@@ -1,0 +1,18 @@
+dependencies:
+- name: external-dns
+  repository: https://charts.bitnami.com/bitnami
+  version: 3.4.4
+- name: botkube
+  repository: https://infracloudio.github.io/charts
+  version: v0.11.0
+- name: k8s-spot-termination-handler
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  version: 1.4.8
+- name: kube-janitor
+  repository: https://raw.githubusercontent.com/OpenGov/helm-charts-external/master/
+  version: 0.1.0
+- name: cluster-autoscaler
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  version: 7.3.3
+digest: sha256:95a8687b9e07aae748bcb4db7edb31fcfa4d784f71be5d800165363f41f41ee4
+generated: "2020-10-08T21:00:47.902026+05:30"

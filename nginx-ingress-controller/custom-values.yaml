@@ -1,0 +1,93 @@
+# Nginx
+nginx-ingress:
+  defaultBackend:
+    replicaCount: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 64Mi
+      limits:
+        cpu: 100m
+        memory: 64Mi
+  rbac:
+    create: true
+
+  controller:
+    image:
+      tag: 0.25.1
+
+      # We currently run as the root user for Amazon Linux 2, which is the default.
+      # TODO: Find a better non-privileged user that will work
+      # runAsUser: 0
+
+    replicaCount: 1
+
+    autoscaling:
+      enabled: false
+
+    # Configure Nginx upload size
+    config:
+      proxy-body-size: 100M
+
+    ## Limit the scope of the controller
+    scope:
+      enabled: true
+      namespace: ""   # defaults to .Release.Namespace
+
+    # Custom docker registry secret to pull images from DockerHub
+    imagePullSecrets:
+    - name:
+
+    # publishService is required to make external-dns work happily
+    publishService:
+      enabled: true
+
+    service:
+      # Support for AWS ELB TLS Termination
+      targetPorts:
+        http: http
+        https: http
+
+      annotations:
+        # Needs to be configured before launching
+        service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: '1'
+        service.beta.kubernetes.io/aws-load-balancer-backend-protocol: 'http'
+        service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: '3600'
+        #service.beta.kubernetes.io/aws-load-balancer-ssl-ports: 'https'
+        #service.beta.kubernetes.io/aws-load-balancer-ssl-negotiation-policy: 'ELBSecurityPolicy-TLS-1-2-2017-01'
+
+        # Force TLS redirection; this is required when TLS termination occurs at the ELB
+        #nginx.ingress.kubernetes.io/force-ssl-redirect: 'true'
+
+        # values for external-dns reference (These values are kept here for reference, commented as we are not able to override them via paramter passing)
+        #external-dns.alpha.kubernetes.io/ttl: "1"
+
+        # See https://github.com/kubernetes/kubernetes/blob/v1.10.3/pkg/cloudprovider/providers/aws/aws.go#L99
+        # for more supported annotations
+
+    config:
+      # Assumes AWS ELB (L7) in front
+      use-proxy-protocol: 'false'
+
+      # This will buffer server side responses which should help free up the backends of the requests much sooner
+      proxy-buffering: 'on'
+
+      # The global max body upload size
+      proxy-body-size: 128m
+
+      # Sets server_tokens: off in nginx config which stops the nginx version from being sent in the 'server' header
+      server-tokens: 'false'
+
+      # This is because IE does not support a 308 code
+      http-redirect-code: "301"
+
+      # Trust any client to extract true client IP address from X-Forwarded-For header. Required when run behind ELB SSL termination
+      use-forwarded-headers: "true"
+
+    resources:
+      requests:
+        cpu: 100m
+        memory: 300Mi
+      limits:
+        cpu: 100m
+        memory: 300Mi

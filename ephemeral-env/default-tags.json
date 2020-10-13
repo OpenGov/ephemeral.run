@@ -1,0 +1,8 @@
+{
+  "builds": [
+    {
+      "imageName": "opengovinfracloud/front-end",
+      "tag": "opengovinfracloud/front-end:main"
+    }
+  ]
+}
