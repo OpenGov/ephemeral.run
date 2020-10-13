@@ -30,7 +30,7 @@ jobs:
           kubectl config use-context $KUBE_CONTEXT
           kubectl config current-context
           kubectl get ns
-          REPO=$(echo "$REPO" | awk '{print tolower($0)}')
+          REPO=$(echo "$REPO" | awk '{print tolower($0)}' | sed -e "s/\./-/g")
           if kubectl get ns pr-$REPO-$PR_NUMBER | grep $REPO-$PR_NUMBER ; then
               echo "NAMESPACE EXISTS"
               NAMESPACE_EXISTS=true
