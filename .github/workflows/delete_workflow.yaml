@@ -81,7 +81,7 @@ jobs:
         if: env.NAMESPACE_EXISTS == 'true'
         run: |
           pushd $EPHEMERAL_RUN_REPO/$EPHEMERAL_DIR_PATH
-          REPO=$(echo "$REPO" | awk '{print tolower($0)}')
+          REPO=$(echo "$REPO" | awk '{print tolower($0)}' | sed -e "s/\./-/g")
           cp env.sample.yaml env.yaml
           sed -i "s/USER_INITIALS/pr/g" env.yaml
           sed -i "s/JIRA_ID/$REPO-$PR_NUMBER/g" env.yaml
