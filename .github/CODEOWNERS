@@ -1,0 +1,49 @@
+###
+# Keep this organized alphabetically, read the NOTES, leave meaningful comments.
+# ----------------------------------------------------------------
+#
+# NOTES ABOUT HOW THIS FILE WORKS
+# - Most rules should start with a slash unless you intentionally
+#   want ownership of that pattern _anywhere_ in the repo.
+#   Leave a comment if this is the case.
+#
+# - The last matching rule is the one applied. Examples:
+#   1) Maintainers take ownership of all files with * at the top,
+#      and any rule below for another team will take precedence.
+#   2) Maintainers may be the last listed owner/match for e.g. CODEOWNERS,
+#      so it will be the owning team for changes to those files,
+#      even if they're part of another team's service in a higher match.
+#
+# - As a result of the matching rules above, DO NOT ADD ! (negation) rules.
+#
+# - The base branch's CODEOWNERS file takes precedence over changes
+#   to the CODEOWNERS files in a branch, meaning you can't remove
+#   a base team without their approval.
+#
+# - Changes to CODEOWNERS in a branch are reflected in the PR,
+#   meaning newly added teams will be requested for review in the PR.
+#
+# - Reviewers only get updated when a push occurs to the branch.
+#
+# - ALL TEAMS MUST BE EXPLICITLY GIVEN WRITE ACCESS TO THE REPO
+# ----------------------------------------------------------------
+#
+# RESOURCES
+# - https://git-scm.com/docs/gitignore#_pattern_format
+# - https://help.github.com/en/github/creating-cloning-and-archiving-repositories/about-code-owners
+# ----------------------------------------------------------------
+###
+
+###
+# These are the default owners if no one else takes ownership below.
+#
+# DO NOT MOVE THIS FROM THE TOP OF THE FILE.
+###
+* @OpenGov/ephemeral-run-maintainers
+
+###
+# DO NOT MOVE THIS FROM THE BOTTOM OF THE FILE.
+###
+
+# All repository integrations with GitHub.
+/.github  @OpenGov/ephemeral-run-maintainers
