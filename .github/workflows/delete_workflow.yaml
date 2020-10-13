@@ -9,14 +9,11 @@ jobs:
     runs-on: ubuntu-18.04
     if: github.event.label.name == 'ephemeral-delete' || github.event.action == 'closed'
     env:
-      EPHEMERAL_DIR_PATH: ephemeral-setup
+      EPHEMERAL_DIR_PATH: ephemeral-env
       HELM_VERSION: v3.3.4
       KUBE_CONTEXT: ${{ secrets.AWS_CLUSTER_NAME }}
       AWS_REGION: ap-south-1
       PR_NUMBER: ${{ github.event.number }}
-      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-      DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
-      DOCKERHUB_REPOSITORY: ${{ secrets.DOCKERHUB_REPOSITORY }}
       REPO: ${{ github.event.pull_request.head.repo.name }}
       EPHEMERAL_RUN_REPO: ephemeral.run
     steps:

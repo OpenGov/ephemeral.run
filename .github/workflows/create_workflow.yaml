@@ -16,7 +16,7 @@ jobs:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
       DOCKERHUB_REPOSITORY: ${{ secrets.DOCKERHUB_REPOSITORY }}
-      DOCKERHUB_REGISTRY: index.docker.io
+      HOSTED_ZONE_ID: ${{ secrets.HOSTED_ZONE_ID }}
       HELM_VERSION: v3.3.4
       TTL: 24 hours
       EPHEMERAL_RUN_REPO: ephemeral.run
@@ -41,8 +41,8 @@ jobs:
           token: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
           path: ${{ env.EPHEMERAL_RUN_REPO }}
 
-      - name: Checkout opengov from target canonical branch
-        if: env.REPO != 'ephemeral.run'
+      - name: Checkout ephemeral.run repo from target canonical branch
+        if: env.REPO != env.EPHEMERAL_RUN_REPO
         uses: actions/checkout@v2
         with:
           ref: ${{ env.TARGET_BRANCH }}
@@ -86,17 +86,19 @@ jobs:
           sed -i "s/USER_INITIALS/pr/g" env.yaml
           sed -i "s/JIRA_ID/$REPO-$PR_NUMBER/g" env.yaml
           sed -i "s/KUBECONTEXT_OF_EPHEMERAL_ENVIRONMENT/$KUBE_CONTEXT/g" env.yaml
+          sed -i "s/DOCKERHUB_REGISTRY/$DOCKERHUB_REPOSITORY/g" env.yaml
+          sed -i "s/HOSTED_ZONE_ID/$HOSTED_ZONE_ID/g" env.yaml
           popd
 
       - name: Update image tags for services
-        if: contains (env.REPO, 'ephemeral.run')
+        if: contains (env.REPO, env.EPHEMERAL_RUN_REPO)
         run: |
           echo "Using default tags for images.";
 
       - name: Update image tags for front-end services
         if: contains (env.REPO, 'front-end')
         run: |
-          pushd EPHEMERAL_RUN_REPO/$EPHEMERAL_DIR_PATH
+          pushd $EPHEMERAL_RUN_REPO/$EPHEMERAL_DIR_PATH
           docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
           for IMAGE_NAME in $( grep 'tag' default-tags.json | awk -F '[:"/]' '{print $6}' | grep 'front-end' )
           do
@@ -118,13 +120,13 @@ jobs:
 
       - name: Run helm dep update
         run: |
-          pushd EPHEMERAL_RUN_REPO/$EPHEMERAL_DIR_PATH
+          pushd $EPHEMERAL_RUN_REPO/$EPHEMERAL_DIR_PATH
           ./helm_dep_update.sh
           popd
 
       - name: Run Skaffold Deploy
         run: |
-          pushd EPHEMERAL_RUN_REPO/$EPHEMERAL_DIR_PATH
+          pushd $EPHEMERAL_RUN_REPO/$EPHEMERAL_DIR_PATH
           bash -x init.sh ephemeral-deploy
           DOMAIN_TO_USE=$(cat /tmp/domain_name)
           NAMESPACE=$(cat /tmp/namespace)
