@@ -41,7 +41,7 @@ jobs:
           token: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
           path: ${{ env.EPHEMERAL_RUN_REPO }}
 
-      - name: Checkout opengov from target canonical branch
+      - name: Checkout ephemeral.run repo from target canonical branch
         if: env.REPO != env.EPHEMERAL_RUN_REPO
         uses: actions/checkout@v2
         with:
