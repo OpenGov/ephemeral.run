@@ -1,10 +1,10 @@
 variable "map_users" {
   description = "Additional IAM users to be added to aws-auth"
   default = [
-    { 
-      "groups": [ "system:masters" ],
-      "userarn": "arn:aws:iam::318839763251:user/ephemeral-gha-user", 
-      "username": "ephemeral-gha-user" 
+    {
+      "groups" : ["system:masters"],
+      "userarn" : "arn:aws:iam::318839763251:user/ephemeral-gha-user",
+      "username" : "ephemeral-gha-user"
     },
   ]
 }

@@ -7,8 +7,8 @@ module "ephemeral_workflow_user_policy" {
 locals {
   tags = merge(
     {
-      "service"     = "ephemeral-environments"
-      "terraform"   = "true"
+      "service"   = "ephemeral-environments"
+      "terraform" = "true"
     },
     var.tags,
   )
@@ -32,4 +32,3 @@ resource "aws_iam_user_policy_attachment" "ephemeral_workflow" {
   user       = aws_iam_user.ephemeral_workflow.name
   policy_arn = aws_iam_policy.ephemeral_workflow.arn
 }
-

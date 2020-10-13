@@ -1,14 +1,14 @@
 locals {
-  worker_subnets = "${module.vpc.private_subnets[0]}"
+  worker_subnets       = "${module.vpc.private_subnets[0]}"
   loadbalancer_subnets = "${module.vpc.public_subnets[0]}"
 }
 
 module "eks" {
-  source       = "terraform-aws-modules/eks/aws"
-  cluster_name = local.cluster_name
-  subnets      = module.vpc.private_subnets
+  source          = "terraform-aws-modules/eks/aws"
+  cluster_name    = local.cluster_name
+  subnets         = module.vpc.private_subnets
   cluster_version = "1.15"
-  enable_irsa  = true
+  enable_irsa     = true
 
   tags = {
     Environment = "ephemeral-run-demo"

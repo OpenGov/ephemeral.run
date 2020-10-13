@@ -1,6 +1,6 @@
 #
 # Policy for github actions workflow deployment user
-# Gives access to 
+# Gives access to
 # 1. Ephemeral EKS cluster
 # 2. route53
 #
@@ -54,4 +54,3 @@ data "aws_iam_policy_document" "policy" {
 output "policy" {
   value = data.aws_iam_policy_document.policy.json
 }
-
