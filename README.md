@@ -9,7 +9,7 @@
 
 ephemeral.run is an open-source project created by [@OpenGov](https://github.com/OpenGov) and [@infracloudio](https://github.com/infracloudio) to provide development teams with full application environments for every PR – before merging!
 
-On 14 October 2020 we introduced ephemeral.run at a [CNCF community webinar](https://www.cncf.io/webinars/ephemeral-run-a-full-application-environment-for-every-pr-before-you-merge-to-master/). The slides can be viewed [here](https://docs.google.com/presentation/d/1qxDG2AnNu6od_H-og0tK7NKSw9PkFWco8ONdZCZGcS0/edit?usp=sharing). A link to the recording is forthcoming.
+On 14 October 2020 we introduced ephemeral.run at a CNCF community webinar. The slides and recording can be viewed [here](https://www.cncf.io/webinars/ephemeral-run-a-full-application-environment-for-every-pr-before-you-merge-to-master/).
 
 ## Getting Started
 
@@ -64,7 +64,7 @@ These are sorted by what we feel provides the broadest value to teams. Over time
 
 ## Logo
 
-Our logo was designed by @torymartin88 (torymartin.com).
+Our logo was designed by [@torymartin88](github.com/torymartin88) (torymartin.com).
 
 ---
 
