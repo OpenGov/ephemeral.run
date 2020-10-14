@@ -7,7 +7,7 @@ botkube:
 
   image:
     repository: infracloudio/botkube
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
     ## default tag is appVersion from Chart.yaml. If you want to use
     ## some other tag then it can be specified here
     tag: v0.10.0
@@ -26,7 +26,7 @@ botkube:
           - delete
           - error
 
-  # Setting to support multiple clusters
+    # Setting to support multiple clusters
     settings:
       # Cluster name to differentiate incoming messages
       clustername: ephemeral
@@ -34,11 +34,32 @@ botkube:
       kubectl:
         commands:
           # method which are allowed
-          verbs: ["api-resources", "api-versions", "cluster-info", "describe", "diff", "explain", "get", "logs", "top", "auth"]
+          verbs:
+            [
+              "api-resources",
+              "api-versions",
+              "cluster-info",
+              "describe",
+              "diff",
+              "explain",
+              "get",
+              "logs",
+              "top",
+              "auth",
+            ]
           # resource configuration which is allowed
-          resources: ["deployments", "pods" , "namespaces", "daemonsets", "statefulsets", "storageclasses", "nodes"]
+          resources:
+            [
+              "deployments",
+              "pods",
+              "namespaces",
+              "daemonsets",
+              "statefulsets",
+              "storageclasses",
+              "nodes",
+            ]
 
-# Communication settings
+  # Communication settings
   communications:
     # Settings for Slack
     slack:
@@ -59,12 +80,12 @@ botkube:
       cpu: 100m
       memory: 128Mi
 
-# The static workloads must run on the non-spot instances
+  # The static workloads must run on the non-spot instances
   tolerations:
-  - key: nodeLifeCycle
-    operator: Equal
-    value: normal
-    effect: NoSchedule
+    - key: nodeLifeCycle
+      operator: Equal
+      value: normal
+      effect: NoSchedule
 
   nodeSelector:
     kubernetes.io/lifecycle: normal
@@ -106,11 +127,11 @@ termination-handler:
   image:
     repository: kubeaws/kube-spot-termination-notice-handler
     tag: 1.13.7-1
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
 
   verbose: 1
 
-  slackUrl:  SLACK_WEBHOOK_URL
+  slackUrl: SLACK_WEBHOOK_URL
   clusterName: ephemeral-demo-spot
 
   nodeSelector:
@@ -132,7 +153,7 @@ kube-janitor:
   image:
     repository: hjacobs/kube-janitor
     tag: 19.12.0
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
 
   kubejanitor:
     dryRun: false
@@ -144,7 +165,7 @@ kube-janitor:
         resources:
           - namespaces
         jmespath: "metadata.labels.ephemeralkubejanitor"
-        ttl: 10m
+        ttl: 1h
 
   cron:
     schedule: "*/5 * * * *"
@@ -185,16 +206,16 @@ cluster-autoscaler:
   #awsAccessKeyID: ""
   #awsSecretAccessKey: ""
   # Only applicable to runing on Amazon Linux 2
-  sslCertHostPath: '/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem'
+  sslCertHostPath: "/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem"
 
-  cloudProvider: 'aws'
+  cloudProvider: "aws"
 
   # You are required to set the AWS region
-  awsRegion: ''
+  awsRegion: ""
 
   # You must set the following to the EKS cluster name
   autoDiscovery:
-    clusterName: 'ephemeral-demo-spot'
+    clusterName: "ephemeral-demo-spot"
   #autoscalingGroups:
   #  - name: ephemeral-demo-spot-worker-green-spot20201009124542983500000004
   #    maxSize: 3
@@ -210,7 +231,7 @@ cluster-autoscaler:
     # For EKS clusters, the only type of pods that will be in that namespace are the kube-proxy and CNI pod
     skip-nodes-with-system-pods: false
     skip-nodes-with-local-storage: false
-    aws-use-static-instance-list : true
+    aws-use-static-instance-list: true
 
   resources:
     requests:

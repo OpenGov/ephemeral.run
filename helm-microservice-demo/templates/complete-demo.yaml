@@ -229,7 +229,7 @@ spec:
       containers:
       - name: front-end
         image: {{ .Values.frontend.image.repository}}:{{ .Values.frontend.image.tag}}
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         resources:
           requests:
             cpu: 100m
@@ -658,7 +658,7 @@ spec:
       containers:
       - name: user
         image: weaveworksdemos/user:0.4.0
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         ports:
         - containerPort: 80
         env:

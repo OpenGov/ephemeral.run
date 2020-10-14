@@ -9,10 +9,9 @@ images:
 
 namespace:
   eph_env_ns_name: ""
-
 # image:
 #   repository: nginx
-#   pullPolicy: IfNotPresent
+#   pullPolicy: Always
 #   # Overrides the image tag whose default is the chart appVersion.
 #   tag: ""
 
