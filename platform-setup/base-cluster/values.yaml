@@ -165,7 +165,7 @@ kube-janitor:
         resources:
           - namespaces
         jmespath: "metadata.labels.ephemeralkubejanitor"
-        ttl: 10m
+        ttl: 1h
 
   cron:
     schedule: "*/5 * * * *"
