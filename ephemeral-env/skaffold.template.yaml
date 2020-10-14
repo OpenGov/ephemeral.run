@@ -75,7 +75,7 @@ profiles:
               - ../nginx-ingress-controller/custom-values.yaml
             setValues:
               controller.service.annotations.external-dns\.alpha\.kubernetes\.io/hostname: DOMAIN_TO_USE
-              controller.scope.namespace: ${ephemeral_dev_initials}-${ephemeral_work_item_id}
+              controller.watchNamespace: ${ephemeral_dev_initials}-${ephemeral_work_item_id}
               #Following annotation is to be used if TLS is to be enabled on the ingress
               #Requires certificate to be provisioned through ACM
               #nginx-ingress.controller.service.annotations."service\.beta\.kubernetes\.io/aws-load-balancer-ssl-cert": ACM_CERT_ARN
@@ -110,7 +110,7 @@ profiles:
               - ../nginx-ingress-controller/custom-values.yaml
             setValues:
               controller.service.annotations.external-dns\.alpha\.kubernetes\.io/hostname: DOMAIN_TO_USE
-              controller.scope.namespace: ${ephemeral_dev_initials}-${ephemeral_work_item_id}
+              controller.watchNamespace: ${ephemeral_dev_initials}-${ephemeral_work_item_id}
               #Following annotation is to be used if TLS is to be enabled on the ingress
               #Requires certificate to be provisioned through ACM
               #nginx-ingress.controller.service.annotations."service\.beta\.kubernetes\.io/aws-load-balancer-ssl-cert": ACM_CERT_ARN
