@@ -658,7 +658,7 @@ spec:
       containers:
       - name: user
         image: weaveworksdemos/user:0.4.0
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         ports:
         - containerPort: 80
         env:
