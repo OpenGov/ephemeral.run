@@ -66,7 +66,7 @@ These are sorted by what we feel provides the broadest value to teams. Over time
 
 ## Logo
 
-Our logo was designed by [@torymartin88](github.com/torymartin88) (torymartin.com).
+Our logo was designed by [@torymartin88](https://github.com/torymartin88) ([torymartin.com](https://torymartin.com)).
 
 ---
 
