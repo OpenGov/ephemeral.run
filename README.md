@@ -9,7 +9,7 @@
 
 ephemeral.run is an open-source project created by [@OpenGov](https://github.com/OpenGov) and [@infracloudio](https://github.com/infracloudio) to provide development teams with full application environments for every PR – before merging!
 
-On 14 October 2020 we introduced ephemeral.run at a [CNCF community webinar](https://www.cncf.io/webinars/ephemeral-run-a-full-application-environment-for-every-pr-before-you-merge-to-master/). The slides can be viewed [here](https://docs.google.com/presentation/d/1qxDG2AnNu6od_H-og0tK7NKSw9PkFWco8ONdZCZGcS0/edit?usp=sharing). A link to the recording is forthcoming.
+On 14 October 2020 we introduced ephemeral.run at a CNCF community webinar. The slides and recording can be viewed [here](https://www.cncf.io/webinars/ephemeral-run-a-full-application-environment-for-every-pr-before-you-merge-to-master/).
 
 ## Getting Started
 
@@ -27,6 +27,8 @@ Our maintainers (admins) are:
 - [@vishal-biyani](https://github.com/vishal-biyani)
 
 Note that this repository's configuration and permissions are managed by Terraform (maintained by [@jspiro](https://github.com/jspiro)). Changes must _never_ be made in the GitHub UI.
+
+Also, it is our policy that PR authors do the final merge of their work after getting approvals and sufficient feedback. Maintainers will not initiate the merge.
 
 ## Design Goals
 
@@ -64,7 +66,7 @@ These are sorted by what we feel provides the broadest value to teams. Over time
 
 ## Logo
 
-Our logo was designed by @torymartin88 (torymartin.com).
+Our logo was designed by [@torymartin88](https://github.com/torymartin88) ([torymartin.com](https://torymartin.com)).
 
 ---
 
