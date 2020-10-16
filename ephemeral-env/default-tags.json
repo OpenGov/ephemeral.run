@@ -2,7 +2,7 @@
   "builds": [
     {
       "imageName": "soulshake/front-end",
-      "tag": "soulshake/front-end:master"
+      "tag": "soulshake/front-end:main"
     }
   ]
 }
