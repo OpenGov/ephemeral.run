@@ -43,7 +43,7 @@ profiles:
       tagPolicy:
         gitCommit: {}
       artifacts:
-        - image: opengovinfracloud/front-end
+        - image: soulshake/front-end
           context: ../../front-end/
           docker:
             dockerfile: Dockerfile
