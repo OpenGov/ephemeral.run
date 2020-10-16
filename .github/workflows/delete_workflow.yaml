@@ -45,7 +45,7 @@ jobs:
         uses: peter-evans/create-or-update-comment@v1
         with:
           token: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
-          repository: OpenGov/${{ env.REPO }}
+          repository: soulshake/${{ env.REPO }}
           issue-number: ${{ env.PR_NUMBER }}
           body: |
             Deletion for your ephemeral environment has started.
@@ -57,7 +57,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: main
-          repository: OpenGov/${{ env.EPHEMERAL_RUN_REPO }}
+          repository: soulshake/${{ env.EPHEMERAL_RUN_REPO }}
           token: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
           path: ${{ env.EPHEMERAL_RUN_REPO }}
 
@@ -133,7 +133,7 @@ jobs:
         uses: peter-evans/create-or-update-comment@v1
         with:
           token: ${{ secrets.GIT_HUB_ACCESS_TOKEN }}
-          repository: OpenGov/${{ env.REPO }}
+          repository: soulshake/${{ env.REPO }}
           issue-number: ${{ env.PR_NUMBER }}
           body: |
             Your environment has been deleted and resources are now available for another.
