@@ -11,20 +11,40 @@ This helm chart installs the required management components for the Ephemeral.ru
 
 For each of the components, following values need to be set at a minimum.
 
-## external-dns
+## Usage
 
-Update the AWS Account id correctly for [Service Account Annotation](https://github.com/OpenGov/ephemeral.run/blob/main/platform-setup/base-cluster/values.yaml#L87)
+### Setup
 
-## cluter-autoscaler
+Install helm 3 or above.
 
-Update the AWS Account id correctly for [Service Account Annotation](https://github.com/OpenGov/ephemeral.run/blob/main/platform-setup/base-cluster/values.yaml#L183)
+### Configure
 
-## botkube
+Update the following items in [values.yaml](platform-setup/base-cluster/values.yaml):
+
+#### external-dns and cluster-autoscaler
+
+Replace `<ACCOUNT_ID>` with your own AWS Account id:
+
+```
+account_id="$(aws sts get-caller-identity | jq -r .Account)"
+sed -i -e "s/<ACCOUNT_ID>/${account_id}/" values.yaml
+```
+
+#### botkube
 
 1. Add Botkube to your slack workspace and note the token.
-2. Update [SLACK_TOKEN](https://github.com/OpenGov/ephemeral.run/blob/main/platform-setup/base-cluster/values.yaml#L48)
-3. Update [SLACK Channel] where you want the notifications(https://github.com/OpenGov/ephemeral.run/blob/main/platform-setup/base-cluster/values.yaml#L46)
+2. Update [`<SLACK_TOKEN>`](platform-setup/base-cluster/values.yaml#L69)
+3. Update [`<SLACK CHANNEL>`](platform-setup/base-cluster/values.yaml#L67) where you want the notifications
 
-## kube-janitor
+#### kube-janitor
 
-1. Update the [TTL](https://github.com/OpenGov/ephemeral.run/blob/main/platform-setup/base-cluster/values.yaml#L147) to the appropriate value. TTL defines the time for which the environments lives. Once TTL expires, the environment will be deleted.
+1. Update the [`ttl`](platform-setup/base-cluster/values.yaml#L168) to the appropriate value. TTL defines the time for which the environments lives. Once TTL expires, the environment will be deleted.
+
+### Apply
+
+From the `platform-setup/base-cluster/` directory, run:
+
+```
+helm lint
+helm install my-cherry-chart buildachart/ --values buildachart/values.yaml
+```

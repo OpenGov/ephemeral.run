@@ -64,9 +64,9 @@ botkube:
     # Settings for Slack
     slack:
       enabled: true
-      channel: SLACK_CHANNEL
+      channel: <SLACK_CHANNEL>
       notiftype: short # Change notification type short/long you want to receive. notiftype is optional and Default notification type is short (if not specified) # e.g https://example.com:80
-      token: SLACK_TOKEN
+      token: <SLACK_TOKEN>
 
   resources:
     # We usually recommend not to specify default resources and to leave this as a conscious
