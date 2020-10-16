@@ -26,6 +26,8 @@ jobs:
 
       - name: Test Access to EKS cluster
         run: |
+          cat /home/runner/.kube/config
+          echo $KUBE_CONTEXT | base64
           aws eks --region $AWS_REGION update-kubeconfig --name $KUBE_CONTEXT --alias $KUBE_CONTEXT
           kubectl config use-context $KUBE_CONTEXT
           kubectl config current-context
