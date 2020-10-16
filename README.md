@@ -13,7 +13,7 @@ On 14 October 2020 we introduced ephemeral.run at a CNCF community webinar. The 
 
 ## Getting Started
 
-Read [GETTING-STARTED](https://github.com/OpenGov/ephemeral.run/blob/main/GETTING-STARTED) to... get started.
+Read [GETTING-STARTED.md](https://github.com/OpenGov/ephemeral.run/blob/main/GETTING-STARTED.md) to... get started.
 
 ## Contributing
 
@@ -27,8 +27,6 @@ Our maintainers (admins) are:
 - [@vishal-biyani](https://github.com/vishal-biyani)
 
 Note that this repository's configuration and permissions are managed by Terraform (maintained by [@jspiro](https://github.com/jspiro)). Changes must _never_ be made in the GitHub UI.
-
-Also, it is our policy that PR authors do the final merge of their work after getting approvals and sufficient feedback. Maintainers will not initiate the merge.
 
 ## Design Goals
 
