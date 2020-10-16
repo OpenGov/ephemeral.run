@@ -13,7 +13,7 @@ On 14 October 2020 we introduced ephemeral.run at a CNCF community webinar. The 
 
 ## Getting Started
 
-Read [GETTING-STARTED.md](https://github.com/OpenGov/ephemeral.run/blob/main/GETTING-STARTED.md) to... get started.
+Read [GETTING-STARTED.md](GETTING-STARTED.md) to... get started.
 
 ## Contributing
 

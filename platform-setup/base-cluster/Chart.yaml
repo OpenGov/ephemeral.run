@@ -1,23 +1,23 @@
 apiVersion: v2
 name: base-cluster
-version: 1.0
-appVersion: 1.0
+version: "1.0"
+appVersion: "1.0"
 description: Kubernetes base resources
 dependencies:
   - name: external-dns
     repository: https://charts.bitnami.com/bitnami
     version: 3.4.4
-  
+
   - name: botkube
     version: v0.11.0
     repository: https://infracloudio.github.io/charts
-  
+
   - name: k8s-spot-termination-handler
     version: 1.4.8
     repository: https://kubernetes-charts.storage.googleapis.com/
     condition: termination-handler.enabled
     alias: termination-handler
-  
+
   - name: kube-janitor
     version: 0.1.0
     repository: https://raw.githubusercontent.com/OpenGov/helm-charts-external/master/
