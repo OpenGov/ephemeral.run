@@ -28,8 +28,6 @@ Our maintainers (admins) are:
 
 Note that this repository's configuration and permissions are managed by Terraform (maintained by [@jspiro](https://github.com/jspiro)). Changes must _never_ be made in the GitHub UI.
 
-Also, it is our policy that PR authors do the final merge of their work after getting approvals and sufficient feedback. Maintainers will not initiate the merge.
-
 ## Design Goals
 
 These were the design goals we started with:
