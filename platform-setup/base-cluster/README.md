@@ -46,5 +46,6 @@ From the `platform-setup/base-cluster/` directory, run:
 
 ```
 helm lint
-helm install my-cherry-chart buildachart/ --values buildachart/values.yaml
+helm dependency update
+helm install NAME_OF_YOUR_CHOICE . --values values.yaml
 ```

@@ -1,8 +1,8 @@
 {
   "builds": [
     {
-      "imageName": "opengovinfracloud/front-end",
-      "tag": "opengovinfracloud/front-end:main"
+      "imageName": "soulshake/front-end",
+      "tag": "soulshake/front-end:master"
     }
   ]
 }

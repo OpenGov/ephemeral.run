@@ -1,5 +1,5 @@
-environment1.demo.ephemeral.run
-environment2.demo.ephemeral.run
-environment3.demo.ephemeral.run
-environment4.demo.ephemeral.run
-environment5.demo.ephemeral.run
+environment1.demo.beacon.best
+environment2.demo.beacon.best
+environment3.demo.beacon.best
+environment4.demo.beacon.best
+environment5.demo.beacon.best
