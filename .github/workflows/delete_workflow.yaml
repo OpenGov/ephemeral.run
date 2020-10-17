@@ -11,7 +11,7 @@ jobs:
     env:
       EPHEMERAL_DIR_PATH: ephemeral-env
       HELM_VERSION: v3.3.4
-      KUBE_CONTEXT: ${{ secrets.AWS_CLUSTER_NAME }}
+      KUBE_CONTEXT: ephemeral-demo-spot
       AWS_REGION: ap-south-1
       PR_NUMBER: ${{ github.event.number }}
       REPO: ${{ github.event.pull_request.head.repo.name }}
