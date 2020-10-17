@@ -17,10 +17,11 @@ jobs:
       REPO: ${{ github.event.pull_request.head.repo.name }}
       EPHEMERAL_RUN_REPO: ephemeral.run
     steps:
+      # https://github.com/aws-actions/configure-aws-credentials
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: AKIA2URBX6R5MMMMLSEQ
+          aws-access-key-id: AKIA2URBX6R5P27R2RUP
           aws-secret-access-key: ${{ secrets.IAM_CLUSTER_PASSWORD }}
           aws-region: ${{ env.AWS_REGION }}
 
