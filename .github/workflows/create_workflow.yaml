@@ -14,7 +14,7 @@ jobs:
       # KUBE_CONTEXT: arn:aws:eks:ap-south-1:731288958074:cluster/ephemeral-demo-spot
       # KUBE_CONTEXT: ${{ secrets.AWS_CLUSTER_NAME }}
       AWS_REGION: ap-south-1
-      IAM_CLUSTER_USER: AKIA2URBX6R5P27R2RUP
+      IAM_CLUSTER_USER: AKIA2URBX6R5HLQKSAFD
       PR_NUMBER: ${{ github.event.client_payload.pull_number }}
       DOCKERHUB_USERNAME: soulshake
       DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}

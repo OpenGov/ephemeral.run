@@ -3,7 +3,7 @@ variable "map_users" {
   default = [
     {
       "groups" : ["system:masters"],
-      "userarn" : "arn:aws:iam::318839763251:user/ephemeral-gha-user",
+      "userarn" : "arn:aws:iam::731288958074:user/ephemeral-gha-user",
       "username" : "ephemeral-gha-user"
     },
   ]
