@@ -25,7 +25,7 @@ Follow the steps below to run the sample:
 
    You can obtain the values below by running `terraform output` from `ephemeral.run/platform-setup/terraform`:
    - `AWS_CLUSTER_NAME`: `cluster_name`
-   - `IAM_CLUSTER_USER`: The last part of `ephemeral-gha-user_iam_arn`
+   - `IAM_CLUSTER_USER`: `ephemeral-gha-user_iam_creds_id`
    - `IAM_CLUSTER_PASSWORD`: `ephemeral-gha-user_iam_creds_secret`
 ?. Enable workflows in the Actions tab of your fork of the `front-end` repo.
 5. Make some change to the `front-end` codebase in a branch.

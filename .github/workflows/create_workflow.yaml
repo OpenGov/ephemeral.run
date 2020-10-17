@@ -13,7 +13,7 @@ jobs:
       KUBE_CONTEXT: ephemeral-demo-spot
       # KUBE_CONTEXT: ${{ secrets.AWS_CLUSTER_NAME }}
       AWS_REGION: ap-south-1
-      IAM_CLUSTER_USER: arn:aws:iam::731288958074:user/ephemeral-gha-user
+      IAM_CLUSTER_USER: AKIA2URBX6R5MMMMLSEQ
       PR_NUMBER: ${{ github.event.client_payload.pull_number }}
       DOCKERHUB_USERNAME: soulshake
       DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
@@ -107,10 +107,12 @@ jobs:
         if: contains (env.REPO, 'front-end')
         run: |
           pushd $EPHEMERAL_RUN_REPO/$EPHEMERAL_DIR_PATH
-          docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
+          docker login -u ${{ env.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
           docker images
           for IMAGE_NAME in $( grep 'tag' default-tags.json | awk -F '[:"/]' '{print $6}' | grep 'front-end' )
           do
+              echo "IMAGE_NAME: $IMAGE_NAME"
+              echo "DOCKERHUB_REPOSITORY/IMAGE_NAME:PR-PR_NUMBER: $DOCKERHUB_REPOSITORY/$IMAGE_NAME:PR-$PR_NUMBER"
               if DOCKER_CLI_EXPERIMENTAL=enabled docker manifest inspect $DOCKERHUB_REPOSITORY/$IMAGE_NAME:PR-$PR_NUMBER > /dev/null ; then
                   echo "$DOCKERHUB_REPOSITORY/$IMAGE_NAME:PR-$PR_NUMBER is present in Docker repo and will be used";
                   sed -i "s/$IMAGE_NAME:main/$IMAGE_NAME:PR-$PR_NUMBER/g" default-tags.json
