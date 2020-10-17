@@ -10,13 +10,15 @@ jobs:
       TARGET_BRANCH: ${{ github.event.client_payload.target_branch_name }}
       PR_BRANCH: ${{ github.event.client_payload.branch_name }}
       EPHEMERAL_DIR_PATH: ephemeral-env
-      KUBE_CONTEXT: ${{ secrets.AWS_CLUSTER_NAME }}
+      KUBE_CONTEXT: ephemeral-demo-spot
+      # KUBE_CONTEXT: ${{ secrets.AWS_CLUSTER_NAME }}
       AWS_REGION: ap-south-1
+      IAM_CLUSTER_USER: AKIA2URBX6R5MMMMLSEQ
       PR_NUMBER: ${{ github.event.client_payload.pull_number }}
-      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_USERNAME: soulshake
       DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
-      DOCKERHUB_REPOSITORY: ${{ secrets.DOCKERHUB_REPOSITORY }}
-      HOSTED_ZONE_ID: ${{ secrets.HOSTED_ZONE_ID }}
+      DOCKERHUB_REPOSITORY: soulshake
+      HOSTED_ZONE_ID: Z10145802FGJFNXM2YH93
       HELM_VERSION: v3.3.4
       TTL: 24 hours
       EPHEMERAL_RUN_REPO: ephemeral.run
@@ -53,16 +55,16 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.IAM_CLUSTER_USER }}
+          aws-access-key-id: ${{ env.IAM_CLUSTER_USER }}
           aws-secret-access-key: ${{ secrets.IAM_CLUSTER_PASSWORD }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Configure Access to EKS cluster
         run: |
-          cat /home/runner/.kube/config
           aws eks --region $AWS_REGION update-kubeconfig --name $KUBE_CONTEXT --alias $KUBE_CONTEXT
           kubectl config use-context $KUBE_CONTEXT
           kubectl config current-context
+          cat /home/runner/.kube/config
           kubectl get ns
 
       - name: Download skaffold
@@ -84,11 +86,13 @@ jobs:
           pushd $EPHEMERAL_RUN_REPO/$EPHEMERAL_DIR_PATH
           REPO=$(echo "$REPO" | awk '{print tolower($0)}' | sed -e "s/\./-/g")
           cp env.sample.yaml env.yaml
+          cat env.yaml
           sed -i "s/USER_INITIALS/pr/g" env.yaml
           sed -i "s/JIRA_ID/$REPO-$PR_NUMBER/g" env.yaml
           sed -i "s/KUBECONTEXT_OF_EPHEMERAL_ENVIRONMENT/$KUBE_CONTEXT/g" env.yaml
           sed -i "s/DOCKERHUB_REGISTRY/$DOCKERHUB_REPOSITORY/g" env.yaml
           sed -i "s/HOSTED_ZONE_ID/$HOSTED_ZONE_ID/g" env.yaml
+          cat env.yaml
           popd
 
       - name: Update image tags for services
@@ -100,9 +104,12 @@ jobs:
         if: contains (env.REPO, 'front-end')
         run: |
           pushd $EPHEMERAL_RUN_REPO/$EPHEMERAL_DIR_PATH
-          docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
+          docker login -u ${{ env.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
+          docker images
           for IMAGE_NAME in $( grep 'tag' default-tags.json | awk -F '[:"/]' '{print $6}' | grep 'front-end' )
           do
+              echo "IMAGE_NAME: $IMAGE_NAME"
+              echo "DOCKERHUB_REPOSITORY/IMAGE_NAME:PR-PR_NUMBER: $DOCKERHUB_REPOSITORY/$IMAGE_NAME:PR-$PR_NUMBER"
               if DOCKER_CLI_EXPERIMENTAL=enabled docker manifest inspect $DOCKERHUB_REPOSITORY/$IMAGE_NAME:PR-$PR_NUMBER > /dev/null ; then
                   echo "$DOCKERHUB_REPOSITORY/$IMAGE_NAME:PR-$PR_NUMBER is present in Docker repo and will be used";
                   sed -i "s/$IMAGE_NAME:main/$IMAGE_NAME:PR-$PR_NUMBER/g" default-tags.json
@@ -110,6 +117,7 @@ jobs:
                   echo "$DOCKERHUB_REPOSITORY/$IMAGE_NAME:PR-$PR_NUMBER is NOT present in Docker repo, using default";
               fi
           done
+          cat default-tags.json
           popd
 
       - name: Install correct helm version

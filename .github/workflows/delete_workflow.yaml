@@ -11,7 +11,7 @@ jobs:
     env:
       EPHEMERAL_DIR_PATH: ephemeral-env
       HELM_VERSION: v3.3.4
-      KUBE_CONTEXT: ${{ secrets.AWS_CLUSTER_NAME }}
+      KUBE_CONTEXT: ephemeral-demo-spot
       AWS_REGION: ap-south-1
       PR_NUMBER: ${{ github.event.number }}
       REPO: ${{ github.event.pull_request.head.repo.name }}
@@ -20,14 +20,12 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.IAM_CLUSTER_USER }}
+          aws-access-key-id: AKIA2URBX6R5MMMMLSEQ
           aws-secret-access-key: ${{ secrets.IAM_CLUSTER_PASSWORD }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Test Access to EKS cluster
         run: |
-          cat /home/runner/.kube/config
-          echo $KUBE_CONTEXT | base64
           aws eks --region $AWS_REGION update-kubeconfig --name $KUBE_CONTEXT --alias $KUBE_CONTEXT
           kubectl config use-context $KUBE_CONTEXT
           kubectl config current-context
