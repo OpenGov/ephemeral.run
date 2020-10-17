@@ -10,7 +10,8 @@ jobs:
       TARGET_BRANCH: ${{ github.event.client_payload.target_branch_name }}
       PR_BRANCH: ${{ github.event.client_payload.branch_name }}
       EPHEMERAL_DIR_PATH: ephemeral-env
-      KUBE_CONTEXT: ephemeral-demo-spot
+      KUBE_CONTEXT: arn:aws:eks:ap-south-1:731288958074:cluster/ephemeral-demo-spot
+      # KUBE_CONTEXT: ephemeral-demo-spot
       # KUBE_CONTEXT: ${{ secrets.AWS_CLUSTER_NAME }}
       AWS_REGION: ap-south-1
       IAM_CLUSTER_USER: AKIA2URBX6R5P27R2RUP
