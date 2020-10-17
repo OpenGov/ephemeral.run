@@ -65,6 +65,7 @@ jobs:
           aws eks --region $AWS_REGION update-kubeconfig --name $KUBE_CONTEXT --alias $KUBE_CONTEXT
           kubectl config use-context $KUBE_CONTEXT
           kubectl config current-context
+          aws sts get-caller-identity
           cat /home/runner/.kube/config
           kubectl get ns
 
