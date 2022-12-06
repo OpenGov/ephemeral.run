@@ -1,5 +1,6 @@
 # Nginx
-nginx-ingress:
+#nginx-ingress:
+ ingress-nginx:
   defaultBackend:
     replicaCount: 1
     resources:
