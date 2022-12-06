@@ -7,13 +7,13 @@ set -o errexit
 source get_domain.sh # import function
 
 # Access yaml content
-export $(yq r env.yaml -p pv '*.*' | sed -e 's/\./_/' -e 's/: /=/' -e 's/"//g')
+export $(yq e '*.*' env.yaml | sed -e 's/\./_/' -e 's/: /=/' -e 's/"//g')
 
 # Run Skaffold
 if [ "${1-default}" == "minikube" ]; then
   envsubst <skaffold.template.yaml >skaffold_"${minikube_dev_initials}"-"${minikube_work_item_id}".yaml
-  skaffold dev --status-check=false --cache-artifacts=true -p minikube -f skaffold_"${minikube_dev_initials}"-"${minikube_work_item_id}".yaml 
-  
+  skaffold dev --status-check=false --cache-artifacts=true -p minikube -f skaffold_"${minikube_dev_initials}"-"${minikube_work_item_id}".yaml
+
 
 elif [ "${1-default}" == "ephemeral-development" ]; then
   envsubst <skaffold.template.yaml >skaffold_"${ephemeral_dev_initials}"-"${ephemeral_work_item_id}".yaml
